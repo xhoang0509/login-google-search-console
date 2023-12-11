@@ -1,7 +1,9 @@
-import express from "express";
-import { google } from "googleapis";
+const express = require("express");
+const { google } = require("googleapis");
+const path = require("path");
 
 const app = express();
+app.use(express.static(path.join(__dirname, "./static")));
 const PORT = 3333;
 
 // Init config auth
@@ -28,6 +30,10 @@ app.get("/callback", async (req, res) => {
     } catch (err) {
         res.status(500).send("Authorization failed.");
     }
+});
+
+app.get("/rest", async (req, res) => {
+    res.sendFile(`rest.html`);
 });
 
 app.listen(PORT, () => {

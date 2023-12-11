@@ -6,14 +6,16 @@ const main = async () => {
     try {
         const browser = await chromium.launchPersistentContext("/home/xhoang/.config/google-chrome/Profile 8", {
             channel: "chrome",
-            // headless: false,
+            headless: false,
         });
         const page = await browser.newPage();
         const pageSearchConsole = await browser.newPage();
         const googleSearchConsole = new GoogleSearchConsole("https://doppelherz.neo-artistic.com/", pageSearchConsole);
         await googleSearchConsole.openDashboard();
-        await googleSearchConsole.openSiteMap();
-        await googleSearchConsole.submitSiteMap();
+        // await googleSearchConsole.openSiteMap();
+        // await googleSearchConsole.submitSiteMap();
+
+        await googleSearchConsole.addNewStore();
 
         // await pageSearchConsole.$(`[data-node-index='2;0'] div[role='button'][jsaction] > span[jsslot] > span[class]`);
         // await browser.close();

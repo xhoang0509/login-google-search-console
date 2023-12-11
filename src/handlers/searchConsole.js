@@ -1,3 +1,4 @@
+const fs = require("fs");
 exports.GoogleSearchConsole = class {
     constructor(domain, page) {
         this.domain = decodeURIComponent(domain);
@@ -28,7 +29,47 @@ exports.GoogleSearchConsole = class {
     }
 
     async addNewStore() {
+        const writeStream = fs.createWriteStream("src/logger/auth-meta-tag.jsonl", {
+            flags: "a",
+        });
+        // 1 open dashboard
         await this.page.goto(`https://search.google.com/search-console`);
-        
+        const popup = await this.page.$(`[id="resource-selector-container"]`);
+
+        // 2 click popup
+        if (popup) {
+            await popup.click();
+
+            // 3 click button add new resource
+            const buttonAddStore = await this.page.$(
+                `div[class][role='option'][jsaction^="click:"][data-site-verification][aria-selected]`
+            );
+
+            if (buttonAddStore) {
+                await buttonAddStore.click();
+
+                await this.page.evaluate(async () => {
+                    const input = document.querySelector(
+                        `input[type='text'][autocomplete="off"][aria-label="https://www.example.com"]`
+                    );
+                    input.setAttribute("data-initial-value", `https://dev-xuan-d-ng-store.myshopify.com`);
+                    input.value = `https://dev-xuan-d-ng-store.myshopify.com`;
+                    input.focus();
+                });
+
+                // click element to active button submit
+                await this.page.$(".ziL9ec.C6efae").then(async (element) => {
+                    await element.click();
+                });
+
+                const buttonSubmit = await this.page.$(`.O8Dkfe .C6efae .CwaK9`);
+                if (buttonSubmit) buttonSubmit.click();
+
+                const metaTagEle = await this.page.waitForSelector(`[jscontroller="gZjhIf"]`);
+                const val = await metaTagEle.getAttribute("data-initial-value");
+                writeStream.write(`${JSON.stringify({ metatag: val })}\n`);
+                writeStream.end();
+            }
+        }
     }
 };
