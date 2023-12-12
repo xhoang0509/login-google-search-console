@@ -1,8 +1,21 @@
 const fs = require("fs");
+const { chromium } = require("playwright");
 exports.GoogleSearchConsole = class {
-    constructor(domain, page) {
+    constructor(domain) {
         this.domain = decodeURIComponent(domain);
-        this.page = page;
+    }
+
+    async init() {
+        const browser = await chromium.launchPersistentContext("/home/xhoang/.config/google-chrome/Profile 8", {
+            channel: "chrome",
+            headless: false,
+        });
+        this.browser = browser;
+        this.page = await browser.newPage();
+    }
+
+    async close() {
+        await this.browser.close();
     }
 
     async openDashboard() {
@@ -14,6 +27,7 @@ exports.GoogleSearchConsole = class {
     }
 
     async submitSiteMap() {
+        await this.openSiteMap();
         await this.page
             .locator(
                 `input[type="text"][jsname][autocomplete="off"][tabindex="0"][autocorrect="off"][autocapitalize="off"][spellcheck="false"]`
@@ -48,14 +62,14 @@ exports.GoogleSearchConsole = class {
             if (buttonAddStore) {
                 await buttonAddStore.click();
 
-                await this.page.evaluate(async () => {
+                await this.page.evaluate(async (domainVal) => {
                     const input = document.querySelector(
                         `input[type='text'][autocomplete="off"][aria-label="https://www.example.com"]`
                     );
-                    input.setAttribute("data-initial-value", `https://dev-hoang-nx-2.myshopify.com`);
-                    input.value = `https://dev-hoang-nx-2.myshopify.com`;
+                    input.setAttribute("data-initial-value", domainVal);
+                    input.value = domainVal;
                     input.focus();
-                });
+                }, this.domain);
 
                 // click element to active button submit
                 await this.page.$(".ziL9ec.C6efae").then(async (element) => {
@@ -68,7 +82,7 @@ exports.GoogleSearchConsole = class {
                 const metaTagEle = await this.page.waitForSelector(`[jscontroller="gZjhIf"]`);
                 const val = await metaTagEle.getAttribute("data-initial-value");
                 const log = JSON.stringify({
-                    domain: `https://dev-hoang-nx-2.myshopify.com`,
+                    domain: this.domain,
                     metaTag: val,
                     time: new Date(),
                 });
@@ -76,5 +90,58 @@ exports.GoogleSearchConsole = class {
                 writeStream.end();
             }
         }
+    }
+
+    async authStoreAfterPublishHead() {
+        const domain = `https://dev-xuan-d-ng-store.myshopify.com/`;
+        await this.page.goto(`https://search.google.com/search-console`);
+        // 1 open dashboard
+        const popup = await this.page.$(`[id="resource-selector-container"]`);
+
+        // 2 click popup
+        if (popup) {
+            await popup.click();
+        }
+
+        const allStoreElements = await this.page.$$(".MkjOTb.oKubKe.zpVKtf");
+        for (const ele of allStoreElements) {
+            const storeDomain = await ele.textContent();
+            if (storeDomain === domain) {
+                await ele.click();
+            }
+        }
+
+        const buttonSubmit = await this.page.locator("#TZk80d");
+        await buttonSubmit.waitFor({ state: "visible" });
+        await buttonSubmit.click();
+    }
+
+    async removeUrlCache() {
+        const url = `https://search.google.com/search-console/removals?resource_id=${encodeURIComponent(this.domain)}`;
+        await this.page.goto(url);
+
+        let buttonNewRequest = await this.page.$$(`[jscontroller="AkIrf"] > [jsname="Hf7sUe"]`);
+        buttonNewRequest = buttonNewRequest[buttonNewRequest.length - 1];
+        if (buttonNewRequest) await buttonNewRequest.click();
+
+        let buttonTabRemoveInCache = await this.page.$$(`[jsname="I0Fcpe"] > [jsname="AznF2e"]`);
+        buttonTabRemoveInCache = buttonTabRemoveInCache[buttonTabRemoveInCache.length - 1];
+        if (buttonTabRemoveInCache) await buttonTabRemoveInCache.click();
+
+        await this.page.locator("#c6").fill(`${this.domain}/products/`);
+
+        const buttonYes = await this.page.$(`#riss7c > div.mpJeQc > span > label:nth-child(2)`);
+        if (buttonYes) await buttonYes.click();
+        await new Promise((res) => setTimeout(res, 1000));
+        const buttonContinue = await this.page.$(
+            `#yDmH0d > div.llhEMd.iWO5td > div > div.g3VIld.E3hMrf.Up8vH.J9Nfi.iWO5td > div.XfpsVe.J9fJmf > div.U26fgb.O0WRkf.oG5Srb.C0oVfc.kHssdc.tWntE.M9Bg4d`
+        );
+        if (buttonContinue) await buttonContinue.click();
+
+        await new Promise((res) => setTimeout(res, 1000));
+        const confirmSubmit = await this.page.$(
+            `#yDmH0d > div.llhEMd.iWO5td > div > div.g3VIld.Ka0n7d.Up8vH.J9Nfi.iWO5td > div.XfpsVe.J9fJmf > div:nth-child(2)`
+        );
+        if (confirmSubmit) await confirmSubmit.click();
     }
 };
