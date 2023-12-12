@@ -52,8 +52,8 @@ exports.GoogleSearchConsole = class {
                     const input = document.querySelector(
                         `input[type='text'][autocomplete="off"][aria-label="https://www.example.com"]`
                     );
-                    input.setAttribute("data-initial-value", `https://dev-xuan-d-ng-store.myshopify.com`);
-                    input.value = `https://dev-xuan-d-ng-store.myshopify.com`;
+                    input.setAttribute("data-initial-value", `https://dev-hoang-nx-2.myshopify.com`);
+                    input.value = `https://dev-hoang-nx-2.myshopify.com`;
                     input.focus();
                 });
 
@@ -67,7 +67,12 @@ exports.GoogleSearchConsole = class {
 
                 const metaTagEle = await this.page.waitForSelector(`[jscontroller="gZjhIf"]`);
                 const val = await metaTagEle.getAttribute("data-initial-value");
-                writeStream.write(`${JSON.stringify({ metatag: val })}\n`);
+                const log = JSON.stringify({
+                    domain: `https://dev-hoang-nx-2.myshopify.com`,
+                    metaTag: val,
+                    time: new Date(),
+                });
+                writeStream.write(`${log}\n`);
                 writeStream.end();
             }
         }
