@@ -1,12 +1,14 @@
 const fs = require("fs");
 const { chromium } = require("playwright");
+const config = require("../config");
+
 exports.GoogleSearchConsole = class {
     constructor(domain) {
         this.domain = decodeURIComponent(domain);
     }
 
     async init() {
-        const browser = await chromium.launchPersistentContext("/home/xhoang/.config/google-chrome/Profile 8", {
+        const browser = await chromium.launchPersistentContext(config.chromium.path, {
             channel: "chrome",
             headless: false,
         });
@@ -24,6 +26,11 @@ exports.GoogleSearchConsole = class {
 
     async openSiteMap() {
         await this.page.goto(`https://search.google.com/search-console/sitemaps?resource_id=${this.domain}`);
+        const url = this.page.url();
+        if (url.includes(`https://accounts.google.com/v3/signin/confirmidentifier`)) {
+        }
+
+        console.log(url);
     }
 
     async submitSiteMap() {
