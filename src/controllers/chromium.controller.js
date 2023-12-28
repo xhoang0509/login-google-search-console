@@ -1,64 +1,38 @@
-const { GoogleAccount } = require("../auto/google");
+const { GoogleAccount } = require("../auto/gmail");
 const { GoogleSearchConsole } = require("../auto/searchConsole");
 const config = require("../config");
+const { InternalServerError, Forbidden } = require("../response/error.res");
+const SuccessResponse = require("../response/success.res");
 const { googleAccount } = config;
-
-exports.authApi = async (req, res) => {
-    const resp = {
-        message: "OK",
-    };
-    let statusCode = 200;
-    try {
-    } catch (e) {
-        console.log(e);
-    }
-    return res.status(statusCode).json(resp);
-};
-
-exports.callback = async (req, res) => {
-    const resp = {
-        message: "OK",
-    };
-    let statusCode = 200;
-    try {
-    } catch (e) {
-        console.log(e);
-    }
-    return res.status(statusCode).json(resp);
-};
 
 exports.openDashboard = async (req, res) => {
     try {
         const { domain } = req.body;
+        if (!domain) {
+            return new Forbidden({ message: "domain is required!" }).send(res);
+        }
         const googleSearchConsole = new GoogleSearchConsole(domain);
         await googleSearchConsole.init();
         await googleSearchConsole.openDashboard();
-        // await googleSearchConsole.close();
-
-        // const googleChrome = new GoogleAccount(googleAccount.email, googleAccount.password);
-        // await googleChrome.init();
-        // await googleChrome.login();
-        res.status(200).json({
-            message: "open dashboard",
-        });
+        await googleSearchConsole.close();
+        return new SuccessResponse({}).send(res);
     } catch (e) {
-        return res.status(500).json({
-            message: e.message,
-        });
+        return new InternalServerError({ message: e.message }).send(res);
     }
 };
 
 exports.openSitemap = async (req, res) => {
     try {
         const { domain } = req.body;
+        if (!domain) {
+            return new Forbidden({ message: "domain is required!" }).send(res);
+        }
         const googleSearchConsole = new GoogleSearchConsole(domain);
         await googleSearchConsole.init();
         await googleSearchConsole.openSiteMap();
-        res.status(200).json({ message: `OK` });
+        return new SuccessResponse({}).send(res);
     } catch (e) {
-        return res.status(500).json({
-            message: e.message,
-        });
+        return new InternalServerError({ message: e.message }).send(res);
     }
 };
 
@@ -69,11 +43,9 @@ exports.submitSitemap = async (req, res) => {
         await googleSearchConsole.init();
         await googleSearchConsole.submitSiteMap();
         // await googleSearchConsole.close();
-        res.status(200).json({ message: `OK` });
+        return new SuccessResponse({}).send(res);
     } catch (e) {
-        return res.status(500).json({
-            message: e.message,
-        });
+        return new InternalServerError({ message: e.message }).send(res);
     }
 };
 
@@ -88,13 +60,7 @@ exports.removeUrlCache = async (req, res) => {
             message: "OK",
             type: "removeUrlCache",
         });
-        // setTimeout(async () => {
-        //     await googleSearchConsole.close();
-        // }, 10000);
     } catch (e) {
-        console.log(e);
-        return res.status(500).json({
-            message: e.message,
-        });
+        return new InternalServerError({ message: e.message }).send(res);
     }
 };

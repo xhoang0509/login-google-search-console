@@ -11,9 +11,9 @@ module.exports = {
         email: GMAIL_EMAIL,
         password: GMAIL_PASSWORD,
     },
-    googleApp: {
+    googleApi: {
         clientId: GG_CLIENT_ID,
         clientSecret: GG_CLIENT_SECRET,
-        redirectUrl: `http://localhost:${PORT}/auth/callback`,
+        redirectUrl: `http://localhost:${PORT}/google-auth/callback`,
     },
 };

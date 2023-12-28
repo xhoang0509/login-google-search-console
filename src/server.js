@@ -1,5 +1,7 @@
-const express = require("express");
 require("dotenv").config();
+const fetch = require("node-fetch");
+global.fetch = fetch;
+const express = require("express");
 const bodyParser = require("body-parser");
 const routes = require("./routes");
 const config = require("./config");
@@ -14,5 +16,5 @@ app.use(
 app.use(routes);
 
 app.listen(config.app.port, () => {
-    console.log(`🚀 App is running on http://localhost:${config.app.port} 🚀`);
+    console.log(`App is running on port ${config.app.port}`);
 });
