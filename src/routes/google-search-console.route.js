@@ -1,5 +1,5 @@
 const express = require("express");
-const { sites, sitemaps } = require("../controllers/google-search-console");
+const { sites, sitemaps, urlInspection } = require("../controllers/google-search-console");
 const googleSearchConsoleRoute = express.Router();
 
 // sites
@@ -14,4 +14,6 @@ googleSearchConsoleRoute.get("/sitemaps/list", sitemaps.list);
 googleSearchConsoleRoute.put("/sitemaps", sitemaps.submit);
 googleSearchConsoleRoute.delete("/sitemaps", sitemaps.delete);
 
+// URL Inspection
+googleSearchConsoleRoute.get("/url/check", urlInspection.check);
 module.exports = googleSearchConsoleRoute;

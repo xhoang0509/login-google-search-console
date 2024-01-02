@@ -21,13 +21,16 @@ module.exports = (sequelize, DataTypes) => {
             createdAt: {
                 type: DataTypes.DATE,
             },
+            expiry_date: {
+                type: DataTypes.BIGINT,
+            },
             updatedAt: {
                 type: DataTypes.DATE,
             },
         },
         {
             tableName: `googleApis`,
-        }
+        },
     );
 
     return googleApis;

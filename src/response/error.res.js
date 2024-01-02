@@ -1,8 +1,8 @@
 const { Response } = require(".");
 
 class InternalServerError extends Response {
-    constructor({ message = "Internal Server Error", payload = null }) {
-        super({ statusCode: 500, message, success: false, payload });
+    constructor({ message = "Internal Server Error", payload = null, error = null }) {
+        super({ statusCode: 500, message, success: false, payload, error });
     }
 }
 

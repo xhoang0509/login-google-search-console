@@ -1,12 +1,9 @@
 const express = require("express");
-const chromiumRoute = require("./chromium.route");
-const googleAuthRoute = require("./google-auth.route");
-const googleSearchConsoleRoute = require("./google-search-console.route");
 
 const routes = express.Router();
 
-routes.use("/chromium", chromiumRoute);
-routes.use("/google-auth", googleAuthRoute);
-routes.use("/google-search-console", googleSearchConsoleRoute);
+routes.use("/chromium", require("./chromium.route"));
+routes.use("/google-auth", require("./google-auth.route"));
+routes.use("/google-search-console", require("./google-search-console.route"));
 
 module.exports = routes;

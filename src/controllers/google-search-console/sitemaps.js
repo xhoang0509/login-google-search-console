@@ -1,3 +1,6 @@
+const { InternalServerError } = require("../../response/error.res");
+const SuccessResponse = require("../../response/success.res");
+
 const GoogleApis = require("../../models").googleApis;
 
 exports.get = async (req, res) => {
@@ -9,17 +12,20 @@ exports.get = async (req, res) => {
         });
         const siteUrl = encodeURIComponent(req.query.siteUrl);
         const feedpath = encodeURIComponent(`${req.query.siteUrl}/sitemap.xml`);
-        const resp = await fetch(`https://www.googleapis.com/webmasters/v3/sites/${siteUrl}/sitemaps/${feedpath}`, {
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${googleApi.access_token}`,
+        const resp = await fetch(
+            `https://www.googleapis.com/webmasters/v3/sites/${siteUrl}/sitemaps/${feedpath}`,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${googleApi.access_token}`,
+                },
             },
-        });
-        const resJson = await resp.json();
-        return res.status(200).json(resJson);
+        );
+        const resJson = await resp();
+        return new SuccessResponse({ payload: resJson }).send(res);
     } catch (e) {
         console.log(e);
-        res.status(500).json({ error: e.message });
+        return new InternalServerError({ message: e.message }).send(res);
     }
 };
 
@@ -31,14 +37,17 @@ exports.list = async (req, res) => {
             },
         });
         const siteUrl = encodeURIComponent(req.query.siteUrl);
-        const resp = await fetch(`https://www.googleapis.com/webmasters/v3/sites/${siteUrl}/sitemaps`, {
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${googleApi.access_token}`,
+        const resp = await fetch(
+            `https://www.googleapis.com/webmasters/v3/sites/${siteUrl}/sitemaps`,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${googleApi.access_token}`,
+                },
             },
-        });
+        );
         const resJson = await resp.json();
-        return res.status(200).json(resJson);
+        return new SuccessResponse({ payload: { resJson } }).send(res);
     } catch (e) {
         console.log(e);
         res.status(500).json({ error: e.message });
@@ -62,13 +71,16 @@ exports.submit = async (req, res) => {
             },
         });
 
-        const resp = await fetch(`https://www.googleapis.com/webmasters/v3/sites/${siteUrl}/sitemaps/${feedpath}`, {
-            headers: {
-                method: "PUT",
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${googleApi.access_token}`,
+        const resp = await fetch(
+            `https://www.googleapis.com/webmasters/v3/sites/${siteUrl}/sitemaps/${feedpath}`,
+            {
+                headers: {
+                    method: "PUT",
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${googleApi.access_token}`,
+                },
             },
-        });
+        );
         const resJson = await resp.json();
         return res.status(200).json(resJson);
     } catch (e) {
@@ -93,13 +105,16 @@ exports.delete = async (req, res) => {
             },
         });
 
-        const resp = await fetch(`https://www.googleapis.com/webmasters/v3/sites/${siteUrl}/sitemaps/${feedpath}`, {
-            headers: {
-                method: "DELETE",
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${googleApi.access_token}`,
+        const resp = await fetch(
+            `https://www.googleapis.com/webmasters/v3/sites/${siteUrl}/sitemaps/${feedpath}`,
+            {
+                headers: {
+                    method: "DELETE",
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${googleApi.access_token}`,
+                },
             },
-        });
+        );
         const resJson = await resp.json();
         return res.status(200).json(resJson);
     } catch (e) {

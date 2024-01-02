@@ -1,9 +1,6 @@
-const { GoogleAccount } = require("../auto/gmail");
 const { GoogleSearchConsole } = require("../auto/searchConsole");
-const config = require("../config");
 const { InternalServerError, Forbidden } = require("../response/error.res");
 const SuccessResponse = require("../response/success.res");
-const { googleAccount } = config;
 
 exports.openDashboard = async (req, res) => {
     try {

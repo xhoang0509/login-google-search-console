@@ -1,4 +1,5 @@
-const { PORT, CHROME_PROFILE_PATH, GMAIL_EMAIL, GMAIL_PASSWORD, GG_CLIENT_ID, GG_CLIENT_SECRET } = process.env;
+const { PORT, CHROME_PROFILE_PATH, GMAIL_EMAIL, GMAIL_PASSWORD, GG_CLIENT_ID, GG_CLIENT_SECRET } =
+    process.env;
 
 module.exports = {
     app: {

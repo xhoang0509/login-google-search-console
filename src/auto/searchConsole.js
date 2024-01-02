@@ -25,9 +25,12 @@ exports.GoogleSearchConsole = class {
     }
 
     async openSiteMap() {
-        await this.page.goto(`https://search.google.com/search-console/sitemaps?resource_id=${this.domain}`);
+        await this.page.goto(
+            `https://search.google.com/search-console/sitemaps?resource_id=${this.domain}`,
+        );
         const url = this.page.url();
         if (url.includes(`https://accounts.google.com/v3/signin/confirmidentifier`)) {
+            // do some thing
         }
 
         console.log(url);
@@ -37,12 +40,12 @@ exports.GoogleSearchConsole = class {
         await this.openSiteMap();
         await this.page
             .locator(
-                `input[type="text"][jsname][autocomplete="off"][tabindex="0"][autocorrect="off"][autocapitalize="off"][spellcheck="false"]`
+                `input[type="text"][jsname][autocomplete="off"][tabindex="0"][autocorrect="off"][autocapitalize="off"][spellcheck="false"]`,
             )
             .fill("sitemap.xml");
 
         const buttonSend = await this.page.$(
-            `[data-node-index='2;0'] div[role='button'][jsaction] > span[jsslot] > span[class]`
+            `[data-node-index='2;0'] div[role='button'][jsaction] > span[jsslot] > span[class]`,
         );
         if (buttonSend) {
             await buttonSend.click();
@@ -63,7 +66,7 @@ exports.GoogleSearchConsole = class {
 
             // 3 click button add new resource
             const buttonAddStore = await this.page.$(
-                `div[class][role='option'][jsaction^="click:"][data-site-verification][aria-selected]`
+                `div[class][role='option'][jsaction^="click:"][data-site-verification][aria-selected]`,
             );
 
             if (buttonAddStore) {
@@ -71,7 +74,7 @@ exports.GoogleSearchConsole = class {
 
                 await this.page.evaluate(async (domainVal) => {
                     const input = document.querySelector(
-                        `input[type='text'][autocomplete="off"][aria-label="https://www.example.com"]`
+                        `input[type='text'][autocomplete="off"][aria-label="https://www.example.com"]`,
                     );
                     input.setAttribute("data-initial-value", domainVal);
                     input.value = domainVal;
@@ -124,7 +127,9 @@ exports.GoogleSearchConsole = class {
     }
 
     async removeUrlCache() {
-        const url = `https://search.google.com/search-console/removals?resource_id=${encodeURIComponent(this.domain)}`;
+        const url = `https://search.google.com/search-console/removals?resource_id=${encodeURIComponent(
+            this.domain,
+        )}`;
         await this.page.goto(url);
 
         let buttonNewRequest = await this.page.$$(`[jscontroller="AkIrf"] > [jsname="Hf7sUe"]`);
@@ -141,13 +146,13 @@ exports.GoogleSearchConsole = class {
         if (buttonYes) await buttonYes.click();
         await new Promise((res) => setTimeout(res, 1000));
         const buttonContinue = await this.page.$(
-            `#yDmH0d > div.llhEMd.iWO5td > div > div.g3VIld.E3hMrf.Up8vH.J9Nfi.iWO5td > div.XfpsVe.J9fJmf > div.U26fgb.O0WRkf.oG5Srb.C0oVfc.kHssdc.tWntE.M9Bg4d`
+            `#yDmH0d > div.llhEMd.iWO5td > div > div.g3VIld.E3hMrf.Up8vH.J9Nfi.iWO5td > div.XfpsVe.J9fJmf > div.U26fgb.O0WRkf.oG5Srb.C0oVfc.kHssdc.tWntE.M9Bg4d`,
         );
         if (buttonContinue) await buttonContinue.click();
 
         await new Promise((res) => setTimeout(res, 1000));
         const confirmSubmit = await this.page.$(
-            `#yDmH0d > div.llhEMd.iWO5td > div > div.g3VIld.Ka0n7d.Up8vH.J9Nfi.iWO5td > div.XfpsVe.J9fJmf > div:nth-child(2)`
+            `#yDmH0d > div.llhEMd.iWO5td > div > div.g3VIld.Ka0n7d.Up8vH.J9Nfi.iWO5td > div.XfpsVe.J9fJmf > div:nth-child(2)`,
         );
         if (confirmSubmit) await confirmSubmit.click();
     }
