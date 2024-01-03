@@ -24,6 +24,9 @@ module.exports = (sequelize, DataTypes) => {
             expiry_date: {
                 type: DataTypes.BIGINT,
             },
+            meta_tag: {
+                type: DataTypes.STRING,
+            },
             updatedAt: {
                 type: DataTypes.DATE,
             },
