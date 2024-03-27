@@ -1,16 +1,16 @@
 "use strict";
 
 module.exports = (sequelize, DataTypes) => {
-    const googleApis = sequelize.define(
-        `googleApis`,
+    const googleAuthModel = sequelize.define(
+        `googleAuth`,
         {
             id: {
                 type: DataTypes.INTEGER(11),
                 primaryKey: true,
                 autoIncrement: true,
             },
-            shop_id: {
-                type: DataTypes.BIGINT,
+            key: {
+                type: DataTypes.STRING,
             },
             access_token: {
                 type: DataTypes.STRING,
@@ -24,17 +24,14 @@ module.exports = (sequelize, DataTypes) => {
             expiry_date: {
                 type: DataTypes.BIGINT,
             },
-            meta_tag: {
-                type: DataTypes.STRING,
-            },
             updatedAt: {
                 type: DataTypes.DATE,
             },
         },
         {
-            tableName: `googleApis`,
+            tableName: `googleAuth`,
         },
     );
 
-    return googleApis;
+    return googleAuthModel;
 };

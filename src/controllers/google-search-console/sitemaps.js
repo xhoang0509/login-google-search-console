@@ -1,28 +1,26 @@
-const { InternalServerError } = require("../../response/error.res");
+const { findGoogleAuth } = require("../../models/repo/googleAuth.repo");
+const { InternalServerError, NotFound } = require("../../response/error.res");
 const SuccessResponse = require("../../response/success.res");
-
-const GoogleApis = require("../../models").googleApis;
+const { google: googleAPI } = require("googleapis");
 
 exports.get = async (req, res) => {
     try {
-        const googleApi = await GoogleApis.findOne({
-            where: {
-                shop_id: 1,
-            },
+        const googleAuthDB = await findGoogleAuth();
+
+        if (googleAuthDB) {
+            return new NotFound({ message: "Could not found google auth from DB" });
+        }
+
+        const searchConsole = googleAPI.searchconsole("v1");
+        const sitemaps = searchConsole.sitemaps;
+        const listSitemap = await sitemaps.list({
+            siteUrl: "https://doppelherz.neo-artistic.com/",
+            access_token: googleAuthDB.access_token,
         });
-        const siteUrl = encodeURIComponent(req.query.siteUrl);
-        const feedpath = encodeURIComponent(`${req.query.siteUrl}/sitemap.xml`);
-        const resp = await fetch(
-            `https://www.googleapis.com/webmasters/v3/sites/${siteUrl}/sitemaps/${feedpath}`,
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${googleApi.access_token}`,
-                },
-            },
-        );
-        const resJson = await resp();
-        return new SuccessResponse({ payload: resJson }).send(res);
+        return new SuccessResponse({
+            message: "test",
+            payload: listSitemap.data,
+        }).send(res);
     } catch (e) {
         console.log(e);
         return new InternalServerError({ message: e.message }).send(res);
@@ -31,18 +29,17 @@ exports.get = async (req, res) => {
 
 exports.list = async (req, res) => {
     try {
-        const googleApi = await GoogleApis.findOne({
-            where: {
-                shop_id: 1,
-            },
-        });
+        const googleAuthDB = await findGoogleAuth();
+        if (googleAuthDB) {
+            return new NotFound({ message: "Could not found google auth from DB" });
+        }
         const siteUrl = encodeURIComponent(req.query.siteUrl);
         const resp = await fetch(
             `https://www.googleapis.com/webmasters/v3/sites/${siteUrl}/sitemaps`,
             {
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${googleApi.access_token}`,
+                    Authorization: `Bearer ${googleAuthDB.access_token}`,
                 },
             },
         );
@@ -65,11 +62,10 @@ exports.submit = async (req, res) => {
 
         const siteUrl = encodeURIComponent(req.query.siteUrl);
         const feedpath = encodeURIComponent(`${req.query.siteUrl}/sitemap.xml`);
-        const googleApi = await GoogleApis.findOne({
-            where: {
-                shop_id: 1,
-            },
-        });
+        const googleAuthDB = await findGoogleAuth();
+        if (googleAuthDB) {
+            return new NotFound({ message: "Could not found google auth from DB" });
+        }
 
         const resp = await fetch(
             `https://www.googleapis.com/webmasters/v3/sites/${siteUrl}/sitemaps/${feedpath}`,
@@ -77,7 +73,7 @@ exports.submit = async (req, res) => {
                 headers: {
                     method: "PUT",
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${googleApi.access_token}`,
+                    Authorization: `Bearer ${googleAuthDB.access_token}`,
                 },
             },
         );
@@ -99,11 +95,10 @@ exports.delete = async (req, res) => {
 
         const siteUrl = encodeURIComponent(req.query.siteUrl);
         const feedpath = encodeURIComponent(`${req.query.siteUrl}/sitemap.xml`);
-        const googleApi = await GoogleApis.findOne({
-            where: {
-                shop_id: 1,
-            },
-        });
+        const googleAuthDB = await findGoogleAuth();
+        if (googleAuthDB) {
+            return new NotFound({ message: "Could not found google auth from DB" });
+        }
 
         const resp = await fetch(
             `https://www.googleapis.com/webmasters/v3/sites/${siteUrl}/sitemaps/${feedpath}`,
@@ -111,7 +106,7 @@ exports.delete = async (req, res) => {
                 headers: {
                     method: "DELETE",
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${googleApi.access_token}`,
+                    Authorization: `Bearer ${googleAuthDB.access_token}`,
                 },
             },
         );

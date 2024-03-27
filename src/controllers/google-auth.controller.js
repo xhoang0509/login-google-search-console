@@ -1,9 +1,11 @@
-const GoogleApi = require("../models").googleApis;
+const googleAuthModel = require("../models").googleAuth;
 
 const { google } = require("googleapis");
 const { NotFound, InternalServerError, Forbidden } = require("../response/error.res");
 const SuccessResponse = require("../response/success.res");
 const { generateAuthUrl, getToken, refreshAccessToken } = require("../services/google-api.service");
+const { LTAP_GOOGLE_AUTH_KEY } = require("../constants");
+const { findGoogleAuth } = require("../models/repo/googleAuth.repo");
 
 exports.authApi = async (req, res) => {
     try {
@@ -17,19 +19,15 @@ exports.callback = async (req, res) => {
     try {
         const code = req.query.code;
         const tokens = await getToken(code);
-        const googleApi = await GoogleApi.findOne({
-            where: {
-                shop_id: 1,
-            },
-        });
+        const googleAuthDB = await findGoogleAuth();
 
-        if (googleApi) {
-            googleApi.access_token = tokens.access_token;
-            googleApi.refresh_token = tokens.refresh_token ? tokens.refresh_token : "";
-            googleApi.expiry_date = tokens.expiry_date;
-            await googleApi.save();
+        if (googleAuthDB) {
+            googleAuthDB.access_token = tokens.access_token;
+            googleAuthDB.refresh_token = tokens.refresh_token ? tokens.refresh_token : "";
+            googleAuthDB.expiry_date = tokens.expiry_date;
+            await googleAuthDB.save();
         } else {
-            await GoogleApi.create({
+            await googleAuthModel.create({
                 shop_id: 1,
                 access_token: tokens.access_token,
                 refresh_token: tokens.refresh_token,
@@ -50,53 +48,44 @@ exports.callback = async (req, res) => {
 
 exports.refreshToken = async (req, res) => {
     try {
-        const googleApi = await GoogleApi.findOne({
-            where: {
-                shop_id: 1,
-            },
-        });
+        const googleAuthDB = await findGoogleAuth();
 
-        if (!googleApi) {
-            return new NotFound({ message: "Not found googleApi in DB!" }).send(res);
+        if (!googleAuthDB) {
+            return new NotFound({ message: "Not found googleAuthModel in DB!" }).send(res);
         }
 
-        if (!googleApi.refresh_token) {
+        if (!googleAuthDB.refresh_token) {
             return new Forbidden({
                 message: "This google api don't have refresh_token!",
             }).send(res);
         }
 
-        const token = await refreshAccessToken(googleApi.refresh_token);
+        const token = await refreshAccessToken(googleAuthDB.refresh_token);
 
-        await GoogleApi.update(
+        await googleAuthModel.update(
             {
                 access_token: token,
             },
             {
                 where: {
-                    shop_id: 1,
+                    key: LTAP_GOOGLE_AUTH_KEY,
                 },
             },
         );
         return new SuccessResponse({ message: "Update accessToken success!" }).send(res);
     } catch (e) {
-        console.log(e);
         return new InternalServerError({ message: e.message }).send(res);
     }
 };
 
 exports.test = async (req, res) => {
     try {
-        const googleApiDB = await GoogleApi.findOne({
-            where: {
-                shop_id: 1,
-            },
-        });
+        const googleAuthModelDB = await findGoogleAuth();
         const searchconsole = google.searchconsole("v1");
         const sitemaps = searchconsole.sitemaps;
         const listSitemap = await sitemaps.list({
             siteUrl: "https://doppelherz.neo-artistic.com/",
-            access_token: googleApiDB.access_token,
+            access_token: googleAuthModelDB.access_token,
         });
         console.log(listSitemap.data);
         return new SuccessResponse({
