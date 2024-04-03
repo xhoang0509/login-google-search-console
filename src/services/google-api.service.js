@@ -17,6 +17,8 @@ exports.generateAuthUrl = () => {
             "https://www.googleapis.com/auth/webmasters",
             "https://www.googleapis.com/auth/webmasters.readonly",
             "https://www.googleapis.com/auth/indexing",
+            "https://www.googleapis.com/auth/siteverification",
+            "https://www.googleapis.com/auth/siteverification.verify_only",
         ],
     });
 };
@@ -32,13 +34,26 @@ exports.getToken = async (code) => {
 };
 
 exports.refreshAccessToken = async (refreshToken) => {
+    let result = {
+        access_token: null,
+        scope: null,
+        token_type: null,
+        expiry_date: null,
+        refresh_token: null,
+    };
     oauth2Client.setCredentials({ refresh_token: refreshToken });
 
     try {
-        const { token } = await oauth2Client.getAccessToken();
-        return token;
+        const response = await oauth2Client.getAccessToken();
+        result = {
+            access_token: response.res.data.access_token,
+            scope: response.res.data.scope,
+            token_type: response.res.data.token_type,
+            expiry_date: response.res.data.expiry_date,
+            refresh_token: response.res.data.refresh_token,
+        };
     } catch (error) {
         console.error("Error refreshing access token:", error.message);
-        throw error;
     }
+    return result;
 };

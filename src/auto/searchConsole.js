@@ -162,17 +162,18 @@ exports.GoogleSearchConsole = class {
         let metaTag = "";
         try {
             // 1 open dashboard
-            await this.page.goto(`https://search.google.com/search-console`);
-            const popup = await this.page.$(`[id="resource-selector-container"]`);
+            await this.page.goto(`https://search.google.com/search-console/welcome`);
+            await sleep(1000);
+            const popup = await this.page.$(
+                `path[d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"]`,
+            );
 
             // 2 click popup
             if (popup) {
                 await popup.click();
 
                 // 3 click button add new resource
-                const buttonAddStore = await this.page.$(
-                    `div[class][role='option'][jsaction^="click:"][data-site-verification][aria-selected]`,
-                );
+                const buttonAddStore = await this.page.$(`#resource-selector-container`);
 
                 if (buttonAddStore) {
                     await buttonAddStore.click();
@@ -209,7 +210,12 @@ exports.GoogleSearchConsole = class {
         try {
             // 1. open dashboard
             await this.page.goto(`https://search.google.com/search-console`);
+            await sleep(1000);
             const popup = await this.page.$(`[id="resource-selector-container"]`);
+
+            // const popup = await this.page.$(
+            //     `path[d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"]`,
+            // );
 
             // 2 click popup
             if (popup) {

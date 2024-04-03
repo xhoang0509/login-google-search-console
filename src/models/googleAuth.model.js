@@ -18,11 +18,14 @@ module.exports = (sequelize, DataTypes) => {
             refresh_token: {
                 type: DataTypes.STRING,
             },
-            createdAt: {
-                type: DataTypes.DATE,
+            scope: {
+                type: DataTypes.STRING,
             },
             expiry_date: {
                 type: DataTypes.BIGINT,
+            },
+            createdAt: {
+                type: DataTypes.DATE,
             },
             updatedAt: {
                 type: DataTypes.DATE,

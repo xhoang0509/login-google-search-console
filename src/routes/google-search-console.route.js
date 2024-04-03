@@ -5,13 +5,13 @@ const googleSearchConsoleRoute = express.Router();
 // sites
 googleSearchConsoleRoute.get("/sites", sites.get);
 googleSearchConsoleRoute.get("/sites/list", sites.list);
-googleSearchConsoleRoute.put("/sites", sites.add);
+googleSearchConsoleRoute.post("/sites", sites.add);
 googleSearchConsoleRoute.delete("/sites", sites.delete);
 
 // sitemaps
 googleSearchConsoleRoute.get("/sitemaps", sitemaps.get);
 googleSearchConsoleRoute.get("/sitemaps/list", sitemaps.list);
-googleSearchConsoleRoute.put("/sitemaps", sitemaps.submit);
+googleSearchConsoleRoute.post("/sitemaps", sitemaps.submit);
 googleSearchConsoleRoute.delete("/sitemaps", sitemaps.delete);
 
 // URL Inspection

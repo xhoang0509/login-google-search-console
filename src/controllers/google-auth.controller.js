@@ -25,6 +25,7 @@ exports.callback = async (req, res) => {
             googleAuthDB.access_token = tokens.access_token;
             googleAuthDB.refresh_token = tokens.refresh_token ? tokens.refresh_token : "";
             googleAuthDB.expiry_date = tokens.expiry_date;
+            googleAuthDB.scope = tokens.scope;
             await googleAuthDB.save();
         } else {
             await googleAuthModel.create({
@@ -32,6 +33,7 @@ exports.callback = async (req, res) => {
                 access_token: tokens.access_token,
                 refresh_token: tokens.refresh_token,
                 expiry_date: tokens.expiry_date,
+                scope: tokens.scope,
             });
         }
         res.status(200).json({
@@ -84,10 +86,9 @@ exports.test = async (req, res) => {
         const searchconsole = google.searchconsole("v1");
         const sitemaps = searchconsole.sitemaps;
         const listSitemap = await sitemaps.list({
-            siteUrl: "https://doppelherz.neo-artistic.com/",
+            siteUrl: "https://c8b5a2-7d.myshopify.com/",
             access_token: googleAuthModelDB.access_token,
         });
-        console.log(listSitemap.data);
         return new SuccessResponse({
             message: "test",
             payload: listSitemap.data,

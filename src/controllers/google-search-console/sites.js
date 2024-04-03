@@ -1,8 +1,6 @@
 const { google } = require("googleapis");
-const { Forbidden, InternalServerError } = require("../../response/error.res");
+const { Forbidden, InternalServerError, NotFound } = require("../../response/error.res");
 const SuccessResponse = require("../../response/success.res");
-const { createOAuthWidthCredentials } = require("../../services/google-api.service");
-const GoogleApis = require("../../models").googleApis;
 
 const webmasters = google.webmasters("v3");
 
@@ -13,16 +11,7 @@ exports.get = async (req, res) => {
             return new Forbidden({ message: "siteUrl is required" }).send(res);
         }
 
-        const googleDB = await GoogleApis.findOne({
-            where: {
-                shop_id: 1,
-            },
-        });
-
-        const oauth2Client = createOAuthWidthCredentials({
-            access_token: googleDB.access_token,
-            refresh_token: googleDB.refresh_token,
-        });
+        const { oauth2Client } = req.stateApp;
         const siteRes = await webmasters.sites.get({
             auth: oauth2Client,
             siteUrl,
@@ -39,19 +28,14 @@ exports.get = async (req, res) => {
 
 exports.list = async (req, res) => {
     try {
-        const googleDB = await GoogleApis.findOne({
-            where: {
-                shop_id: 1,
-            },
-        });
-
-        const oauth2Client = createOAuthWidthCredentials({
-            access_token: googleDB.access_token,
-            refresh_token: googleDB.refresh_token,
-        });
+        const { oauth2Client } = req.stateApp;
         const listSiteRes = await webmasters.sites.list({
             auth: oauth2Client,
         });
+        const test = await google.siteVerification("v1").webResource.list({
+            auth: oauth2Client,
+        });
+        console.log(test.data.items);
         return new SuccessResponse({
             payload: {
                 listSite: listSiteRes.data,
@@ -62,21 +46,15 @@ exports.list = async (req, res) => {
         return new InternalServerError({ message: e.message, error: e }).send(res);
     }
 };
+
 exports.add = async (req, res) => {
     try {
-        let siteUrl = req.query.siteUrl;
+        const siteUrl = req.body.siteUrl;
         if (!siteUrl) {
             return new Forbidden({ message: `siteUrl is required` }).send(res);
         }
-        const googleDB = await GoogleApis.findOne({
-            where: {
-                shop_id: 1,
-            },
-        });
-        const oauth2Client = createOAuthWidthCredentials({
-            access_token: googleDB.access_token,
-            refresh_token: googleDB.refresh_token,
-        });
+
+        const { oauth2Client } = req.stateApp;
         await webmasters.sites.add({
             auth: oauth2Client,
             siteUrl,
@@ -93,15 +71,7 @@ exports.delete = async (req, res) => {
         if (!siteUrl) {
             return new Forbidden({ message: `siteUrl is required` }).send(res);
         }
-        const googleDB = await GoogleApis.findOne({
-            where: {
-                shop_id: 1,
-            },
-        });
-        const oauth2Client = createOAuthWidthCredentials({
-            access_token: googleDB.access_token,
-            refresh_token: googleDB.refresh_token,
-        });
+        const { oauth2Client } = req.stateApp;
         await webmasters.sites.delete({
             auth: oauth2Client,
             siteUrl,
