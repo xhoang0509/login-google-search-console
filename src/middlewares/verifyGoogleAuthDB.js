@@ -4,6 +4,7 @@ const {
     createOAuthWidthCredentials,
     refreshAccessToken,
 } = require("../services/google-api.service");
+const { info } = require("../logger");
 
 const verifyGoogleAuthDB = async (req, res, next) => {
     try {
@@ -14,7 +15,7 @@ const verifyGoogleAuthDB = async (req, res, next) => {
         const expiryDate = new Date(googleAuthDB.expiry_date);
 
         if (expiryDate < new Date()) {
-            console.log("auto refresh token");
+            info(__filename, "[APP]", "auto refresh token");
             const { access_token, refresh_token, expiry_date, scope } = await refreshAccessToken(
                 googleAuthDB.refresh_token,
             );

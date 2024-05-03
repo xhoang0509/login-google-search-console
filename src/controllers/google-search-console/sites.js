@@ -32,10 +32,7 @@ exports.list = async (req, res) => {
         const listSiteRes = await webmasters.sites.list({
             auth: oauth2Client,
         });
-        const test = await google.siteVerification("v1").webResource.list({
-            auth: oauth2Client,
-        });
-        console.log(test.data.items);
+       
         return new SuccessResponse({
             payload: {
                 listSite: listSiteRes.data,

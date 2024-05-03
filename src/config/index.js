@@ -1,9 +1,17 @@
-const { PORT, CHROME_PROFILE_PATH, GMAIL_EMAIL, GMAIL_PASSWORD, GG_CLIENT_ID, GG_CLIENT_SECRET } =
-    process.env;
+const {
+    PORT,
+    AMQP_URI,
+    CHROME_PROFILE_PATH,
+    GMAIL_EMAIL,
+    GMAIL_PASSWORD,
+    GG_CLIENT_ID,
+    GG_CLIENT_SECRET,
+} = process.env;
 
 module.exports = {
     app: {
         port: PORT,
+        amqp_uri: `amqp://${AMQP_URI}`,
     },
     chromium: {
         path: CHROME_PROFILE_PATH,

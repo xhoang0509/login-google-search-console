@@ -2,6 +2,8 @@ const fs = require("fs");
 const { chromium } = require("playwright");
 const config = require("../config");
 const { sleep } = require("../helpers");
+
+let browserGlobal = null;
 exports.GoogleSearchConsole = class {
     constructor(domain, headless = true) {
         this.domain = decodeURIComponent(domain);
@@ -9,12 +11,20 @@ exports.GoogleSearchConsole = class {
     }
 
     async init() {
-        const browser = await chromium.launchPersistentContext(config.chromium.path, {
-            channel: "chrome",
-            headless: false,
-        });
-        this.browser = browser;
-        this.page = await browser.newPage();
+        try {
+            const browser = await chromium.launchPersistentContext(config.chromium.path, {
+                channel: "chrome",
+                headless: false,
+            });
+            this.browser = browser;
+            browserGlobal = browser;
+            this.page = await browser.newPage();
+        } catch (error) {
+            if (browserGlobal) {
+                this.browser = browserGlobal;
+                this.page = await browserGlobal.newPage();
+            }
+        }
     }
 
     async close() {
@@ -33,8 +43,6 @@ exports.GoogleSearchConsole = class {
         if (url.includes(`https://accounts.google.com/v3/signin/confirmidentifier`)) {
             // do some thing
         }
-
-        console.log(url);
     }
 
     async submitSiteMap() {

@@ -9,5 +9,6 @@ module.exports = {
         );
         await googleAccount.init()
         await googleAccount.login(); 
+        await googleAccount.close()
     },
 };

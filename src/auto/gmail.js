@@ -1,5 +1,5 @@
 const { chromium } = require("playwright");
-const config = require("../config");
+const { chromium: chromiumConfig } = require("../config");
 const { sleep } = require("../helpers");
 
 exports.GoogleAccount = class {
@@ -10,7 +10,7 @@ exports.GoogleAccount = class {
     }
 
     async init() {
-        const browser = await chromium.launchPersistentContext(config.chromium.path, {
+        const browser = await chromium.launchPersistentContext(chromiumConfig.path, {
             channel: "chrome",
             headless: false,
         });
@@ -35,7 +35,6 @@ exports.GoogleAccount = class {
                 // Iterate through cookies and delete them
                 for (const cookie of cookies) {
                     await this.page.context().clearCookies(cookie);
-                    console.log(`Deleted cookie: ${cookie.name}`);
                 }
                 await this.page.reload();
             }
@@ -64,7 +63,6 @@ exports.GoogleAccount = class {
             }
             return true;
         } catch (e) {
-
             return false;
         }
     }
