@@ -53,7 +53,7 @@ exports.submit = async (req, res) => {
             siteUrl: siteUrl,
             feedpath: feedpath,
         });
-        return new SuccessResponse({ message: "Submit sitemap success" });
+        return new SuccessResponse({ message: "Submit sitemap success", payload: submitResponse });
     } catch (e) {
         return new InternalServerError({ message: e.message }).send(res);
     }

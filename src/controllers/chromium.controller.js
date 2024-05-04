@@ -1,51 +1,20 @@
 const { GoogleSearchConsole } = require("../auto/searchConsole");
-const { InternalServerError, Forbidden, NotFound } = require("../response/error.res");
+const { InternalServerError, NotFound } = require("../response/error.res");
 const SuccessResponse = require("../response/success.res");
 const { BadRequestResponse } = require("../response/error.res");
-const { getContentFile, pushContentFile } = require("../services/shopify/theme");
+const { getContentFile } = require("../services/shopify/theme");
 const ShopModel = require("../models").shops;
 const ConfigModel = require("../models").configs;
 
 const googleAccountService = require("../services/google-account.service");
 const { convertShopifyDomainToSiteUrl } = require("../helpers");
-const { error } = require("../logger");
+const { error, info } = require("../logger");
 const { google } = require("googleapis");
 
 const webmasters = google.webmasters("v3");
 const { publishChromium } = require("../queues/publisher");
 const { CHROMIUM_QUEUE } = require("../queues/consumer");
-exports.openDashboard = async (req, res) => {
-    try {
-        const { domain } = req.body;
-        if (!domain) {
-            return new Forbidden({ message: "domain is required!" }).send(res);
-        }
-        const googleSearchConsole = new GoogleSearchConsole(domain);
-        await googleSearchConsole.init();
-        await googleSearchConsole.openDashboard();
-        // await googleSearchConsole.close();
-        return new SuccessResponse({}).send(res);
-    } catch (e) {
-        error(__filename, "openDashboard", e.message);
-        return new InternalServerError({ message: e.message }).send(res);
-    }
-};
-
-exports.openSitemap = async (req, res) => {
-    try {
-        const { domain } = req.body;
-        if (!domain) {
-            return new Forbidden({ message: "domain is required!" }).send(res);
-        }
-        const googleSearchConsole = new GoogleSearchConsole(domain);
-        await googleSearchConsole.init();
-        await googleSearchConsole.openSiteMap();
-        return new SuccessResponse({}).send(res);
-    } catch (e) {
-        error(__filename, "openSitemap", e.message);
-        return new InternalServerError({ message: e.message }).send(res);
-    }
-};
+const { CONSUME_ACTION } = require("../queues/consumer/chromium");
 
 exports.submitSitemap = async (req, res) => {
     try {
@@ -64,6 +33,7 @@ exports.submitSitemap = async (req, res) => {
 exports.removeUrlCache = async (req, res) => {
     try {
         const { domain } = req.body;
+        const siteUrl = convertShopifyDomainToSiteUrl(domain);
         const { oauth2Client } = req.stateApp;
         const sites = await webmasters.sites.list({
             auth: oauth2Client,
@@ -76,15 +46,16 @@ exports.removeUrlCache = async (req, res) => {
         if (!foundSite) {
             return new BadRequestResponse({ message: "domain not found in sites added" }).send(res);
         }
-        const googleSearchConsole = new GoogleSearchConsole(domain);
-        await googleSearchConsole.init();
-        await googleSearchConsole.removeUrlCache();
-        await googleSearchConsole.close();
-
-        res.status(200).json({
-            message: "OK",
-            type: "removeUrlCache",
+        await publishChromium(CHROMIUM_QUEUE, {
+            siteUrl,
+            action: CONSUME_ACTION.REMOVE_URL_CACHE,
+            payload: {
+                domain,
+            },
         });
+        return new SuccessResponse({
+            message: `Publish event ${CONSUME_ACTION.REMOVE_URL_CACHE}`,
+        }).send(res);
     } catch (e) {
         return new InternalServerError({ message: e.message }).send(res);
     }
@@ -138,37 +109,24 @@ exports.addMetaTagToTheme = async (req, res) => {
             key,
         });
 
-        if (content.includes(`<meta name="google-site-verification"`) && false) {
+        if (content.includes(`<meta name="google-site-verification"`)) {
+            info(__filename, domain, "Metatag existed in theme.liquid");
             return new SuccessResponse({
                 message: "meta tag exist in theme, do nothing !",
             }).send(res);
         } else {
-            // const googleSearchConsole = new GoogleSearchConsole(siteUrl);
-            // await googleSearchConsole.init();
-            // const metaTag = await googleSearchConsole.getMetaTag();
-            // await googleSearchConsole.close();
-            // if (!metaTag) {
-            //     return new NotFound({ message: "metatag is empty" }).send(res);
-            // }
-            // const contentUpdate = content.replace("</title>", `</title>\n ${metaTag}\n`);
-            // const pushContentFileResp = await pushContentFile({
-            //     domain,
-            //     accessToken: shopDB.token,
-            //     themeId,
-            //     fileName: key,
-            //     fileContent: contentUpdate,
-            // });
-            // console.log("===>push content to theme: ", pushContentFileResp);
-            const metaTag = "";
-            publishChromium(CHROMIUM_QUEUE, {
+            await publishChromium(CHROMIUM_QUEUE, {
                 siteUrl,
-                action: "get_meta_tag",
+                action: CONSUME_ACTION.GET_AND_ADD_METATAG,
+                payload: {
+                    domain,
+                    themeId,
+                    accessToken: shopDB.token,
+                    content,
+                },
             });
             return new SuccessResponse({
-                message: "meta tag has been pushed to the theme.",
-                payload: {
-                    metaTag,
-                },
+                message: `Publish event ${CONSUME_ACTION.GET_AND_ADD_METATAG}`,
             }).send(res);
         }
     } catch (e) {
@@ -183,7 +141,7 @@ exports.addMetaTagToTheme = async (req, res) => {
 exports.verifyMetaTag = async (req, res) => {
     try {
         const { domain } = req.body;
-
+        const siteUrl = convertShopifyDomainToSiteUrl(domain);
         const { oauth2Client } = req.stateApp;
         const sites = await webmasters.sites.list({
             auth: oauth2Client,
@@ -197,13 +155,16 @@ exports.verifyMetaTag = async (req, res) => {
             return new BadRequestResponse({ message: "domain not found in sites added" }).send(res);
         }
 
-        const googleSearchConsole = new GoogleSearchConsole(domain, false);
-        await googleSearchConsole.init();
-        await googleSearchConsole.verifyMetaTag();
-        // await googleSearchConsole.close();
+        await publishChromium(CHROMIUM_QUEUE, {
+            siteUrl,
+            action: CONSUME_ACTION.VERIFY_METATAG,
+            payload: {
+                domain,
+            },
+        });
 
         return new SuccessResponse({
-            message: "Verify meta tag success!",
+            message: `Publish event ${CONSUME_ACTION.VERIFY_METATAG}`,
         }).send(res);
     } catch (e) {
         return new InternalServerError({ message: e.message }).send(res);

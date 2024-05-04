@@ -14,15 +14,23 @@ const SearchConsoleChromiumService = {
         return metaTag;
     },
 
-    verifyMetaTag: async () => {
+    verifyMetaTag: async (domain) => {
         try {
+            const googleSearchConsole = new GoogleSearchConsole(domain, false);
+            await googleSearchConsole.init();
+            await googleSearchConsole.verifyMetaTag();
+            await googleSearchConsole.close();
         } catch (e) {
             error(__filename, "verifyMetaTag", e.message);
         }
     },
 
-    removeUrlCache: async () => {
+    removeUrlCache: async (domain) => {
         try {
+            const googleSearchConsole = new GoogleSearchConsole(domain);
+            await googleSearchConsole.init();
+            await googleSearchConsole.removeUrlCache();
+            await googleSearchConsole.close();
         } catch (e) {
             error(__filename, "removeUrlCache", e.message);
         }

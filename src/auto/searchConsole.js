@@ -14,7 +14,7 @@ exports.GoogleSearchConsole = class {
         try {
             const browser = await chromium.launchPersistentContext(config.chromium.path, {
                 channel: "chrome",
-                headless: false,
+                headless: true,
             });
             this.browser = browser;
             browserGlobal = browser;
@@ -29,36 +29,6 @@ exports.GoogleSearchConsole = class {
 
     async close() {
         await this.browser.close();
-    }
-
-    async openDashboard() {
-        await this.page.goto(`https://search.google.com/search-console?resource_id=${this.domain}`);
-    }
-
-    async openSiteMap() {
-        await this.page.goto(
-            `https://search.google.com/search-console/sitemaps?resource_id=${this.domain}`,
-        );
-        const url = this.page.url();
-        if (url.includes(`https://accounts.google.com/v3/signin/confirmidentifier`)) {
-            // do some thing
-        }
-    }
-
-    async submitSiteMap() {
-        await this.openSiteMap();
-        await this.page
-            .locator(
-                `input[type="text"][jsname][autocomplete="off"][tabindex="0"][autocorrect="off"][autocapitalize="off"][spellcheck="false"]`,
-            )
-            .fill("sitemap.xml");
-
-        const buttonSend = await this.page.$(
-            `[data-node-index='2;0'] div[role='button'][jsaction] > span[jsslot] > span[class]`,
-        );
-        if (buttonSend) {
-            await buttonSend.click();
-        }
     }
 
     async addNewStore() {

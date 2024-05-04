@@ -1,6 +1,5 @@
 const express = require("express");
 const {
-    openDashboard,
     removeUrlCache,
     addMetaTagToTheme,
     verifyMetaTag,
@@ -10,7 +9,6 @@ const {
 const chromiumRoute = express.Router();
 
 // google search console
-chromiumRoute.post("/search-console/open-dashboard", openDashboard);
 chromiumRoute.post("/search-console/add-meta-tag", addMetaTagToTheme);
 chromiumRoute.post("/search-console/meta-tag/verify", verifyMetaTag);
 chromiumRoute.post("/search-console/remove-url-cache", removeUrlCache);
