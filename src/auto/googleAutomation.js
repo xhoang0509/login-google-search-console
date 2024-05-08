@@ -19,7 +19,7 @@ exports.GoogleAutomation = class {
         try {
             const browser = await chromium.launchPersistentContext(userDataDir, {
                 channel: "chrome",
-                headless: false,
+                headless: true,
             });
             this.browser = browser;
             browserGlobal = browser;
