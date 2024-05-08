@@ -1,3 +1,4 @@
+const { convertShopifyDomainToSiteUrl } = require("../../helpers");
 const { findGoogleAuth } = require("../../models/repo/googleAuth.repo");
 const { InternalServerError, NotFound } = require("../../response/error.res");
 const SuccessResponse = require("../../response/success.res");
@@ -42,11 +43,12 @@ exports.list = async (req, res) => {
 
 exports.submit = async (req, res) => {
     try {
-        if (!req.body.siteUrl) {
-            return new NotFound({ message: "siteUrl is required!" }).send(res);
+        if (!req.body.domain) {
+            return new NotFound({ message: "domain is required!" }).send(res);
         }
         const { oauth2Client } = req.stateApp;
-        const siteUrl = req.body.siteUrl;
+        const domain = req.body.domain;
+        const siteUrl = convertShopifyDomainToSiteUrl(domain);
         const feedpath = `${siteUrl}/sitemap.xml`;
         const submitResponse = await webmasters.sitemaps.submit({
             auth: oauth2Client,

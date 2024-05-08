@@ -3,8 +3,8 @@ exports.sleep = async (time) => {
 };
 
 exports.convertShopifyDomainToSiteUrl = (shopifyDomain) => {
-    return `https://${shopifyDomain}/`
-}
+    return `https://${shopifyDomain}/`;
+};
 
 /**
  *
@@ -12,5 +12,5 @@ exports.convertShopifyDomainToSiteUrl = (shopifyDomain) => {
  */
 exports.checkSiteUrl = (siteUrl) => {
     const urlRegex = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
-    return urlRegex.test(siteUrl)
-}
+    return urlRegex.test(siteUrl);
+};

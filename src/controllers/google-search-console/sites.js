@@ -1,5 +1,5 @@
 const { google } = require("googleapis");
-const { Forbidden, InternalServerError, NotFound } = require("../../response/error.res");
+const { Forbidden, InternalServerError } = require("../../response/error.res");
 const SuccessResponse = require("../../response/success.res");
 
 const webmasters = google.webmasters("v3");
@@ -32,7 +32,7 @@ exports.list = async (req, res) => {
         const listSiteRes = await webmasters.sites.list({
             auth: oauth2Client,
         });
-       
+
         return new SuccessResponse({
             payload: {
                 listSite: listSiteRes.data,

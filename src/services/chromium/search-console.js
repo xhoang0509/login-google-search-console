@@ -1,12 +1,15 @@
-const { GoogleSearchConsole } = require("../../auto/searchConsole");
+const { GoogleAutomation } = require("../../auto/googleAutomation");
 const { error } = require("../../logger");
 
 const SearchConsoleChromiumService = {
-    getMetaTag: async (siteUrl) => {
-        const googleSearchConsole = new GoogleSearchConsole(siteUrl);
-        await googleSearchConsole.init();
-        const metaTag = await googleSearchConsole.getMetaTag();
-        await googleSearchConsole.close();
+    getMetaTag: async ({ domain, siteUrl }) => {
+        const ggSearchConsole = new GoogleAutomation({
+            domain,
+            siteUrl,
+        });
+        await ggSearchConsole.init();
+        const metaTag = await ggSearchConsole.getMetaTag();
+        await ggSearchConsole.close();
 
         if (!metaTag) {
             return "";
@@ -14,23 +17,30 @@ const SearchConsoleChromiumService = {
         return metaTag;
     },
 
-    verifyMetaTag: async (domain) => {
+    verifyMetaTag: async ({ domain, siteUrl }) => {
         try {
-            const googleSearchConsole = new GoogleSearchConsole(domain, false);
-            await googleSearchConsole.init();
-            await googleSearchConsole.verifyMetaTag();
-            await googleSearchConsole.close();
+            const ggSearchConsole = new GoogleAutomation({
+                domain,
+                siteUrl,
+                headless: false,
+            });
+            await ggSearchConsole.init();
+            await ggSearchConsole.verifyMetaTag();
+            await ggSearchConsole.close();
         } catch (e) {
             error(__filename, "verifyMetaTag", e.message);
         }
     },
 
-    removeUrlCache: async (domain) => {
+    removeUrlCache: async ({ domain, siteUrl }) => {
         try {
-            const googleSearchConsole = new GoogleSearchConsole(domain);
-            await googleSearchConsole.init();
-            await googleSearchConsole.removeUrlCache();
-            await googleSearchConsole.close();
+            const ggSearchConsole = new GoogleAutomation({
+                domain,
+                siteUrl,
+            });
+            await ggSearchConsole.init();
+            await ggSearchConsole.removeUrlCache();
+            await ggSearchConsole.close();
         } catch (e) {
             error(__filename, "removeUrlCache", e.message);
         }
