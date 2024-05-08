@@ -1,3 +1,5 @@
+/* eslint-disable no-empty */
+const fs = require("fs");
 const { InternalServerError, NotFound, Forbidden } = require("../response/error.res");
 const SuccessResponse = require("../response/success.res");
 const { BadRequestResponse } = require("../response/error.res");
@@ -18,6 +20,20 @@ const { CONSUME_ACTION } = require("../queues/consumer/chromium");
 exports.removeUrlCache = async (req, res) => {
     try {
         const { domain } = req.body;
+        if (!domain) {
+            return new NotFound({ message: "domain is required!" }).send(res);
+        }
+        const shopDB = await ShopModel.findOne({
+            where: {
+                domain,
+            },
+        });
+
+        if (!shopDB) {
+            return new NotFound({ message: `find shop with domain ${domain} not found!` }).send(
+                res,
+            );
+        }
         const siteUrl = convertShopifyDomainToSiteUrl(domain);
         const { oauth2Client } = req.stateApp;
         const sites = await webmasters.sites.list({
@@ -127,6 +143,20 @@ exports.addMetaTagToTheme = async (req, res) => {
 exports.verifyMetaTag = async (req, res) => {
     try {
         const { domain } = req.body;
+        if (!domain) {
+            return new NotFound({ message: "domain is required!" }).send(res);
+        }
+        const shopDB = await ShopModel.findOne({
+            where: {
+                domain,
+            },
+        });
+
+        if (!shopDB) {
+            return new NotFound({ message: `find shop with domain ${domain} not found!` }).send(
+                res,
+            );
+        }
         const siteUrl = convertShopifyDomainToSiteUrl(domain);
         const { oauth2Client } = req.stateApp;
         const sites = await webmasters.sites.list({
@@ -191,6 +221,30 @@ exports.googleAccountCheck = async (req, res) => {
                 message: "Not logged in to Google account",
             }).send(res);
         }
+    } catch (e) {
+        return new InternalServerError({ message: e.message }).send(res);
+    }
+};
+
+exports.googleAccountLog = async (req, res) => {
+    try {
+        const logPath = `${process.cwd()}/src/logs/daily_check_status_google_account.jsonl`;
+        let logContent = fs.readFileSync(logPath, { encoding: "utf8", flag: "r" });
+        logContent = logContent.split("\n");
+        const result = [];
+        logContent.forEach((log) => {
+            try {
+                result.push(JSON.parse(log));
+            } catch (error) {}
+        });
+
+        return new SuccessResponse({
+            success: true,
+            message: "Logged in to Google account",
+            payload: {
+                result,
+            },
+        }).send(res);
     } catch (e) {
         return new InternalServerError({ message: e.message }).send(res);
     }

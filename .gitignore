@@ -1,6 +1,6 @@
 node_modules/
 package-lock.json
-src/logger/*.jsonl
 .env
 ltap-chrome/
 .vscode/*
+/src/logs/*.jsonl

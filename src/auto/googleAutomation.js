@@ -1,6 +1,7 @@
 const { chromium } = require("playwright");
 const { sleep, convertShopifyDomainToSiteUrl } = require("../helpers");
 const { googleAccount } = require("../config/index");
+const { error, info } = require("../logger");
 const userDataDir = `${process.cwd()}/ltap-chrome`;
 let browserGlobal = null;
 
@@ -18,12 +19,13 @@ exports.GoogleAutomation = class {
         try {
             const browser = await chromium.launchPersistentContext(userDataDir, {
                 channel: "chrome",
-                headless: this.headless,
+                headless: false,
             });
             this.browser = browser;
             browserGlobal = browser;
             this.page = await browser.newPage();
-        } catch (error) {
+        } catch (e) {
+            error(__filename, "[APP]", e?.stack);
             if (browserGlobal) {
                 this.browser = browserGlobal;
                 this.page = await browserGlobal.newPage();
@@ -81,14 +83,17 @@ exports.GoogleAutomation = class {
             await sleep(1500);
             const pageTitle = await this.page.title();
             if (pageTitle === "Google Account") {
-                console.log("===> Login Google Account success!");
+                console.log("===> LOGIN GOOGLE ACCOUNT SUCCESS!");
+                info(__filename, this?.domain, "LOGIN GOOGLE ACCOUNT SUCCESS!")
                 isLogged = true;
                 return true;
             } else {
-                console.log("===> Login Google Account failed!");
+                console.log("===> LOGIN GOOGLE ACCOUNT FAILED!");
+                error(__filename, this?.domain, "LOGIN GOOGLE ACCOUNT FAILED!")
                 return false;
             }
         } catch (e) {
+            isLogged = false;
             return false;
         }
     }
@@ -164,6 +169,7 @@ exports.GoogleAutomation = class {
             await confirmSubmit.click();
             await this.page.waitForLoadState("load");
             await sleep(1500);
+            info(__filename, this?.domain, "REMOVE URL CACHE SUCCESS")
         }
     }
 
@@ -218,12 +224,12 @@ exports.GoogleAutomation = class {
                 }
             }
         } catch (e) {
-            console.log(e);
+            error(__filename, this?.domain, "ERROR: " + e?.stack);
         }
         if (metaTag) {
-            console.log("get meta tag success");
+            info(__filename, this?.domain, "Get meta tag success!");
         } else {
-            console.log("get meta tag error");
+            error(__filename, this?.domain, "Get meta tag error!");
         }
 
         return metaTag;

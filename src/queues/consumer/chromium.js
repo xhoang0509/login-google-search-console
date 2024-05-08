@@ -1,3 +1,4 @@
+const fs = require("fs");
 const { SHOPIFY_THEME_FILENAME } = require("../../constants");
 const { error, info } = require("../../logger");
 const { SearchConsoleChromiumService } = require("../../services/chromium/search-console");
@@ -43,7 +44,7 @@ exports.handleChromium = async (channel, message) => {
                 fileName: SHOPIFY_THEME_FILENAME,
                 fileContent: contentUpdate,
             });
-            console.log("===> push content to theme: ", pushContentFileResp);
+            info(__filename, domain, "PUSH CONTENT TO THEME SUCCESS: key=" + pushContentFileResp.asset.key);
         }
 
         if (action === VERIFY_METATAG) {
@@ -55,10 +56,23 @@ exports.handleChromium = async (channel, message) => {
         }
 
         if (action === CHECK_GG_LOGGED) {
+            const logPath = `${process.cwd()}/src/logs/daily_check_status_google_account.jsonl`;
+            const writeStream = fs.createWriteStream(logPath, {
+                flags: "a",
+            });
             const status = await GmailChromiumService.checkLogin();
             if (status == false) {
                 await GmailChromiumService.login();
             }
+            const now = new Date();
+            const date = now.toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
+            const time = now.toLocaleTimeString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
+            const logContent = {
+                time: `${date}-${time}`,
+                status,
+            };
+            writeStream.write(JSON.stringify(logContent) + "\n");
+            writeStream.close();
             info(
                 __filename,
                 "[APP schedule]",
@@ -66,7 +80,7 @@ exports.handleChromium = async (channel, message) => {
             );
         }
     } catch (e) {
-        error(__filename, "APP", e.message);
+        error(__filename, "APP", e.stack);
     }
     channel.ack(message);
 };

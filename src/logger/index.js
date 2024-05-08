@@ -23,22 +23,22 @@ function buildLog(file, func, level, domain, message) {
 }
 
 function error(file, domain, message) {
-    const func = error.caller.name;
+    const func = error?.caller?.name;
     LOGGER === 1 && console.error(buildLog(file, func, LOGGER_LEVEL.ERROR, domain, message));
 }
 
 function debug(file, domain, message) {
-    const func = debug.caller.name;
+    const func = debug?.caller?.name;
     LOGGER === 1 && console.debug(buildLog(file, func, LOGGER_LEVEL.DEBUG, domain, message));
 }
 
 function info(file, domain, message) {
-    const func = info.caller.name;
+    const func = info?.caller?.name;
     LOGGER === 1 && console.info(buildLog(file, func, LOGGER_LEVEL.INFO, domain, message));
 }
 
 function warn(file, domain, message) {
-    const func = warn.caller.name;
+    const func = warn?.caller?.name;
     LOGGER === 1 && console.warn(buildLog(file, func, LOGGER_LEVEL.WARN, domain, message));
 }
 

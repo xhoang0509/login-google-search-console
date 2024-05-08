@@ -5,6 +5,7 @@ const {
     verifyMetaTag,
     googleAccountLogin,
     googleAccountCheck,
+    googleAccountLog
 } = require("../controllers/chromium.controller");
 const chromiumRoute = express.Router();
 
@@ -16,4 +17,5 @@ chromiumRoute.post("/search-console/remove-url-cache", removeUrlCache);
 // auth google account search console
 chromiumRoute.post("/google-account/login", googleAccountLogin);
 chromiumRoute.post("/google-account/check", googleAccountCheck);
+chromiumRoute.post("/google-account/log", googleAccountLog);
 module.exports = chromiumRoute;
