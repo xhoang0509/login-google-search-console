@@ -21,5 +21,6 @@ app.use(routes);
 app.listen(config.app.port, async () => {
     await connectQueue();
     await initChromiumPublish();
+    require("./schedules");
     console.log(`App is running on port ${config.app.port}`);
 });

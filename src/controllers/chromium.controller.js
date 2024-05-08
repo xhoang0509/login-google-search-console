@@ -1,12 +1,11 @@
-const { GoogleSearchConsole } = require("../auto/searchConsole");
-const { InternalServerError, NotFound } = require("../response/error.res");
+const { InternalServerError, NotFound, Forbidden } = require("../response/error.res");
 const SuccessResponse = require("../response/success.res");
 const { BadRequestResponse } = require("../response/error.res");
 const { getContentFile } = require("../services/shopify/theme");
 const ShopModel = require("../models").shops;
 const ConfigModel = require("../models").configs;
 
-const googleAccountService = require("../services/google-account.service");
+const googleAccountService = require("../services/chromium/gmail");
 const { convertShopifyDomainToSiteUrl } = require("../helpers");
 const { error, info } = require("../logger");
 const { google } = require("googleapis");
@@ -15,20 +14,6 @@ const webmasters = google.webmasters("v3");
 const { publishChromium } = require("../queues/publisher");
 const { CHROMIUM_QUEUE } = require("../queues/consumer");
 const { CONSUME_ACTION } = require("../queues/consumer/chromium");
-
-exports.submitSitemap = async (req, res) => {
-    try {
-        const { domain } = req.body;
-        const googleSearchConsole = new GoogleSearchConsole(domain);
-        await googleSearchConsole.init();
-        await googleSearchConsole.submitSiteMap();
-        // await googleSearchConsole.close();
-        return new SuccessResponse({}).send(res);
-    } catch (e) {
-        error(__filename, "submitSitemap", e.message);
-        return new InternalServerError({ message: e.message }).send(res);
-    }
-};
 
 exports.removeUrlCache = async (req, res) => {
     try {
@@ -39,8 +24,9 @@ exports.removeUrlCache = async (req, res) => {
             auth: oauth2Client,
         });
         let foundSite = null;
+
         if (sites?.data?.siteEntry?.length) {
-            foundSite = sites?.data?.siteEntry.find((site) => site.siteUrl === domain);
+            foundSite = sites?.data?.siteEntry.find((site) => site.siteUrl === siteUrl);
         }
 
         if (!foundSite) {
@@ -148,7 +134,7 @@ exports.verifyMetaTag = async (req, res) => {
         });
         let foundSite = null;
         if (sites?.data?.siteEntry?.length) {
-            foundSite = sites?.data?.siteEntry.find((site) => site.siteUrl === domain);
+            foundSite = sites?.data?.siteEntry.find((site) => site.siteUrl === siteUrl);
         }
 
         if (!foundSite) {
@@ -173,10 +159,18 @@ exports.verifyMetaTag = async (req, res) => {
 
 exports.googleAccountLogin = async (req, res) => {
     try {
-        await googleAccountService.login();
-        return new SuccessResponse({
-            message: "Login google account success!",
-        }).send(res);
+        const status = await googleAccountService.login();
+        if (status) {
+            return new SuccessResponse({
+                success: true,
+                message: "Login google account success!",
+            }).send(res);
+        } else {
+            return new Forbidden({
+                success: false,
+                message: "Login google account failed!",
+            }).send(res);
+        }
     } catch (e) {
         error(__filename, "APP", "Google account login error: ", e.message);
         return new InternalServerError({ message: e.message }).send(res);
@@ -185,9 +179,18 @@ exports.googleAccountLogin = async (req, res) => {
 
 exports.googleAccountCheck = async (req, res) => {
     try {
-        return new SuccessResponse({
-            message: "Verify meta tag success!",
-        }).send(res);
+        const status = await googleAccountService.checkLogin();
+        if (status) {
+            return new SuccessResponse({
+                success: true,
+                message: "Logged in to Google account",
+            }).send(res);
+        } else {
+            return new Forbidden({
+                success: false,
+                message: "Not logged in to Google account",
+            }).send(res);
+        }
     } catch (e) {
         return new InternalServerError({ message: e.message }).send(res);
     }

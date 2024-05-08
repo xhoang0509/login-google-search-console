@@ -43,7 +43,6 @@ exports.callback = async (req, res) => {
             tokens,
         });
     } catch (e) {
-        console.log(e);
         res.status(500).json({ message: e.message });
     }
 };
